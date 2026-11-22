@@ -54,17 +54,29 @@ const npx = win ? 'npx.cmd' : 'npx'
 
 // 1. The Electron product, exactly as ACRYL packs it. Its work folder holds the Program the Electrobun bundle reuses.
 const tmp = join(dist, 'tmp')
+// The packer names the app's work folder after the source folder (a leading category number dropped).
+const SLUG = 'small-crm-eb'
+const PRODUCT = 'Small CRM'
+const source = join(dist, 'src', SLUG)
 const electronOut = join(dist, 'electron')
 // --reuse: keep the Electron pack of an earlier run (a local rebuild of the Electrobun half only).
 if (!args.includes('--reuse')) {
   rmSync(tmp, { recursive: true, force: true })
   mkdirSync(tmp, { recursive: true })
   rmSync(electronOut, { recursive: true, force: true })
-  run(npx, ['--yes', `@acryldev/blends@${blends}`, 'pack', '--arch', arch, '--out', electronOut], { env: { ...process.env, TMPDIR: tmp, TEMP: tmp, TMP: tmp } })
+  // Pack this repository's own app (its tracked files, copied into dist/src so dist/ never packs itself), under the product's name.
+  rmSync(source, { recursive: true, force: true })
+  mkdirSync(source, { recursive: true })
+  for (const file of execFileSync('git', ['ls-files', '-z'], { cwd: repo, encoding: 'utf8' }).split('\0').filter(Boolean)) {
+    if (!existsSync(join(repo, file))) continue
+    mkdirSync(dirname(join(source, file)), { recursive: true })
+    cpSync(join(repo, file), join(source, file), { verbatimSymlinks: true })
+  }
+  run(npx, ['--yes', `@acryldev/blends@${blends}`, 'pack', '--from', source, '--product', PRODUCT, '--arch', arch, '--out', electronOut], { env: { ...process.env, TMPDIR: tmp, TEMP: tmp, TMP: tmp } })
 }
 const electronInstaller = readdirSync(electronOut).map((f) => join(electronOut, f)).find((f) => /\.(dmg|exe|deb)$/u.test(f))
 if (electronInstaller === undefined) throw new Error(`no Electron installer in ${electronOut}`)
-const work = join(tmp, 'acryl-pack', `blank-${OS}-work`, 'app', 'dist')
+const work = join(tmp, 'acryl-pack', `${SLUG}-${OS}-work`, SLUG, 'dist')
 /** The unpacked Electron app: the folder whose resources/app holds product.json. */
 function findUnpacked(dir, depth = 0) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
