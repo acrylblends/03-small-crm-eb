@@ -15,6 +15,7 @@ import { copyFileSync, cpSync, createReadStream, existsSync, mkdirSync, readdirS
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createZstdDecompress } from 'node:zlib'
+import { slim } from './slim.mjs'
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const args = process.argv.slice(2)
@@ -51,6 +52,7 @@ const run = (file, list, options = {}) => {
   if (result.status !== 0) throw new Error(`${basename(file)} ${list[0]} failed (${String(result.status)})`)
 }
 const npx = win ? 'npx.cmd' : 'npx'
+const GIT_UNUSED = ['git-lfs', 'scalar', 'git-shell', 'git-daemon', 'git-http-backend', 'git-http-push', 'git-imap-send']
 
 // 1. The Electron product, exactly as ACRYL packs it. Its work folder holds the Program the Electrobun bundle reuses.
 const tmp = join(dist, 'tmp')
@@ -108,6 +110,9 @@ log(`Electron: installer ${mb(electron.installerBytes)} MB, installed ${mb(elect
 rmSync(stage, { recursive: true, force: true })
 mkdirSync(stage, { recursive: true })
 cpSync(join(unpacked.resources, 'app'), join(stage, 'payload'), { recursive: true, verbatimSymlinks: true })
+// On Bun the Program loses what only Electron, Node or other OSes use (electrobun/slim.mjs); --host node ships it whole.
+const slimmed = host === 'bun' ? slim(join(stage, 'payload', 'node_modules'), { arch, bunPty: join(repo, 'electrobun', 'bun-pty.cjs') }) : undefined
+if (slimmed !== undefined) for (const [rule, n] of Object.entries(slimmed.removed)) log(`slim: ${rule}: ${mb(n)} MB, ${slimmed.files[rule]} files`)
 // --host bun (default): the frame host runs on Electrobun's own Bun and no Node ships. --host node: the Node that runs this script ships too.
 if (host === 'node') {
   mkdirSync(join(stage, 'node'), { recursive: true })
@@ -131,6 +136,8 @@ if (existsSync(join(unpacked.resources, 'git'))) {
   const links = readdirSync(core, { withFileTypes: true }).filter((entry) => entry.isSymbolicLink()).map((entry) => ({ name: entry.name, to: readlinkSync(join(core, entry.name)) }))
   for (const { name } of links) rmSync(join(core, name))
   writeFileSync(join(stage, 'vcs', 'links.json'), `${JSON.stringify(links)}\n`)
+  // Git's own servers, mail and LFS tools: an ACRYL app only commits, fetches and pushes over HTTPS (git-remote-https links to git-remote-http).
+  if (host === 'bun') for (const name of GIT_UNUSED) rmSync(join(core, name), { force: true })
 }
 const logo = join(stage, 'payload', 'node_modules', '@acryldev', 'desktop-shell', 'lib', 'assets', 'acrylblends-logo.png')
 copyFileSync(logo, join(stage, 'icon.png'))
@@ -198,6 +205,7 @@ const electrobun = {
   payloadBytes: stageBytes.payload,
   nodeBytes: stageBytes.node,
   gitBytes: stageBytes.git,
+  slimmed: slimmed?.removed,
 }
 electrobun.shellBytes = extractedBytes - stageBytes.payload - stageBytes.node - stageBytes.git
 const sizes = { os: OS, arch, blends, host, version: appVersion, node: host === 'node' ? process.version : undefined, electron, electrobun, measured: new Date().toISOString() }
