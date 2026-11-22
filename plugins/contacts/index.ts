@@ -8,10 +8,10 @@ import type { Context } from '@deepseek-ai/cordis'
 import { Acryl } from '../router/src/index.ts'
 
 export const name = 'contacts'
-export const inject = ['crm', 'shell', 'router']
+export const inject = ['crm', 'crmShell', 'router']
 
 export function apply(ctx: Context): void {
-  const { crm, shell } = ctx
+  const { crm, crmShell: shell } = ctx
   const { initialsOf, isRefusal } = crm.kit
   const e = shell.e
   const prefix = shell.prefix

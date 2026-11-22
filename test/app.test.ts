@@ -25,7 +25,7 @@ test('answers health checks on its own server and under the frame prefix, and 40
   assert.deepEqual([...frame.inject], ['routerHttp'])
   await withApp(
     async (app) => {
-      assert.equal(app.root.shell.prefix, FRAME_MOUNT_PREFIX)
+      assert.equal(app.root.crmShell.prefix, FRAME_MOUNT_PREFIX)
       const health = await app.root.router.request(`${FRAME_MOUNT_PREFIX}/health`)
       assert.equal(health.status, 200)
       await health.body?.cancel()
@@ -36,18 +36,18 @@ test('answers health checks on its own server and under the frame prefix, and 40
 
 test('every page registers its sidebar entry, and the entry leaves with its plugin', () =>
   withApp(async (app) => {
-    assert.deepEqual(app.root.shell.navItems().map((item) => item.id), ['pipeline', 'contacts', 'companies', 'activities', 'reports'])
+    assert.deepEqual(app.root.crmShell.navItems().map((item) => item.id), ['pipeline', 'contacts', 'companies', 'activities', 'reports'])
     const extra = app.root.plugin({
       name: 'nav-test',
-      inject: ['shell'],
+      inject: ['crmShell'],
       apply(ctx: typeof app.root) {
-        ctx.effect(() => ctx.shell.nav({ id: 'extra', label: 'Extra', icon: '*', path: '/extra', order: 99 }))
+        ctx.effect(() => ctx.crmShell.nav({ id: 'extra', label: 'Extra', icon: '*', path: '/extra', order: 99 }))
       },
     })
     await extra.await()
-    assert.match(app.root.shell.page({ title: 't', main: '' }), /Extra/)
+    assert.match(app.root.crmShell.page({ title: 't', main: '' }), /Extra/)
     await extra.dispose()
-    assert.doesNotMatch(app.root.shell.page({ title: 't', main: '' }), /Extra/)
+    assert.doesNotMatch(app.root.crmShell.page({ title: 't', main: '' }), /Extra/)
   }))
 
 const canListen = await new Promise<boolean>((done) => {

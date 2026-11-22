@@ -7,7 +7,7 @@
     "router"
   ],
   "provides": [
-    "shell"
+    "crmShell"
   ],
   "dependencies": {
     "@deepseek-ai/cordis": "4.0.4"

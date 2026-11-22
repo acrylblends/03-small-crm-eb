@@ -9,7 +9,7 @@ import { Acryl } from '../router/src/index.ts'
 import type { BoardColumn, Deal, Stage } from '../crm/index.ts'
 
 export const name = 'pipeline'
-export const inject = ['crm', 'shell', 'router']
+export const inject = ['crm', 'crmShell', 'router']
 
 type Tab = 'all' | 'mine' | 'unassigned'
 const tabOf = (value: string | undefined): Tab => (value === 'mine' || value === 'unassigned' ? value : 'all')
@@ -35,7 +35,7 @@ const CLIENT_SCRIPT = `<script>
 </script>`
 
 export function apply(ctx: Context): void {
-  const { crm, shell } = ctx
+  const { crm, crmShell: shell } = ctx
   const { euro, euroShort, isOpen, longDay, OPEN_STAGES, shortDay, STAGE_LABEL, taskState, whenText, isRefusal } = crm.kit
   const e = shell.e
   const prefix = shell.prefix

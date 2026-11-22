@@ -1,7 +1,7 @@
 /**
- * The page shell every page plugin shares (`ctx.shell`): the sidebar entries pages register, links under the mount prefix, the page wrapper and the
- * notice of a redirect. A page plugin registers its entry with `ctx.shell.nav(...)` inside `ctx.effect`, so the entry leaves with the plugin, mounts its
- * routes at `ctx.shell.prefix` and writes every link with `ctx.shell.href(path)`: on its own server the app is at the root, in the ACRYL frame at `/app`.
+ * The page shell every page plugin shares (`ctx.crmShell`): the sidebar entries pages register, links under the mount prefix, the page wrapper and the
+ * notice of a redirect. A page plugin registers its entry with `ctx.crmShell.nav(...)` inside `ctx.effect`, so the entry leaves with the plugin, mounts its
+ * routes at `ctx.crmShell.prefix` and writes every link with `ctx.crmShell.href(path)`: on its own server the app is at the root, in the ACRYL frame at `/app`.
  */
 export interface NavItem {
   /** The page plugin's name. */

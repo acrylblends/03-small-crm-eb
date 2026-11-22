@@ -1,9 +1,9 @@
 /**
- * The CRM's page shell (`ctx.shell`): the sidebar (logo, workspace, the pages that registered an entry, the signed-in person), the cool white look every
+ * The CRM's page shell (`ctx.crmShell`): the sidebar (logo, workspace, the pages that registered an entry, the signed-in person), the cool white look every
  * page shares, and the small view parts pages reuse (a company's identity mark, an owner's avatar, a page header).
  *
- * A page plugin registers its sidebar entry with `ctx.shell.nav(...)` inside `ctx.effect`, so the entry leaves with the plugin (switched off in
- * Settings > Plugins), renders with `ctx.shell.page(...)`, mounts its routes at `ctx.shell.prefix` and writes every link with `ctx.shell.href(path)`.
+ * A page plugin registers its sidebar entry with `ctx.crmShell.nav(...)` inside `ctx.effect`, so the entry leaves with the plugin (switched off in
+ * Settings > Plugins), renders with `ctx.crmShell.page(...)`, mounts its routes at `ctx.crmShell.prefix` and writes every link with `ctx.crmShell.href(path)`.
  */
 import type { Context } from '@deepseek-ai/cordis'
 import { Acryl } from '../router/src/index.ts'
@@ -39,7 +39,7 @@ export interface CrmShell extends Shell {
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
-    shell: CrmShell
+    crmShell: CrmShell
   }
 }
 
@@ -97,6 +97,6 @@ export function apply(ctx: Context, config: ShellConfig = {}): void {
     header: ({ eyebrow, title, lead, actions }) =>
       `<header class="head"><div><small>${escapeHtml(eyebrow)}</small><h1>${escapeHtml(title)}</h1>${lead === undefined ? '' : `<p>${escapeHtml(lead)}</p>`}</div>${actions === undefined ? '' : `<div class="actions">${actions}</div>`}</header>`,
   }
-  ctx.provide('shell', shell)
+  ctx.provide('crmShell', shell)
   ctx.router.route(prefix === '' ? '/' : prefix, new Acryl().get('/health', (c) => c.json({ ok: true })))
 }
