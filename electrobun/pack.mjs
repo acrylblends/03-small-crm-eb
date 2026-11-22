@@ -109,7 +109,8 @@ writeFileSync(blendYaml, readFileSync(blendYaml, 'utf8').replace(/^(metadata:\n(
 const templateRepo = ['--git-dir', join(stage, 'payload', 'template-git'), '--work-tree', join(stage, 'payload')]
 const ident = ['-c', 'user.name=ACRYL Blends', '-c', 'user.email=build@acryldev.dev']
 execFileSync('git', [...templateRepo, 'add', 'blend.yaml'])
-execFileSync('git', [...ident, ...templateRepo, 'commit', '-q', '-m', `Blend version ${appVersion}`])
+// Nothing to commit when blend.yaml already names this version.
+if (spawnSync('git', [...templateRepo, 'diff', '--cached', '--quiet']).status !== 0) execFileSync('git', [...ident, ...templateRepo, 'commit', '-q', '-m', `Blend version ${appVersion}`])
 if (existsSync(join(unpacked.resources, 'git'))) {
   cpSync(join(unpacked.resources, 'git'), join(stage, 'vcs'), { recursive: true, verbatimSymlinks: true })
   // Git's 148 builtin names (libexec/git-core/git-add -> git ...) are symlinks; Electrobun's copy follows them, so each became a 3.5 MB copy of git
