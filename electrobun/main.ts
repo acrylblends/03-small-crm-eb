@@ -1,5 +1,5 @@
 /**
- * The installed ACRYL Blends Blank app on Electrobun instead of Electron. This file is Electrobun's main process (Bun); the window is the system
+ * The installed Small CRM app on Electrobun instead of Electron. This file is Electrobun's main process (Bun); the window is the system
  * webview (WKWebView on macOS, WebView2 on Windows, WebKitGTK on Linux).
  *
  * It does what @acryldev/desktop-shell's Electron main does for a packed product, with the same steps (electrobun/shell-core.mjs is a copy of them):
@@ -52,7 +52,7 @@ if (existsSync(linksFile)) {
       } catch {}
     }
 }
-const title = 'ACRYL Blends (Electrobun)'
+const title = 'Small CRM'
 
 ApplicationMenu.setApplicationMenu([
   {
